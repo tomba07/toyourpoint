@@ -22,10 +22,11 @@ const request = {
         encoding: encoding,
         sampleRateHertz: sampleRateHertz,
         languageCode: languageCode,
-        enableAutomaticPunctuation: true,  // Add this line
+        enableAutomaticPunctuation: true,
+        maxAlternatives: 1,
         model: 'default'
     },
-    interimResults: true, // If you want interim results, set this to true
+    interimResults: true,
 };
 
 let recognizeStream;
@@ -68,20 +69,18 @@ function startStreamingTranscription(socket) {
         .on('data', data => {
             const result = data.results[0];
             if (result && result.alternatives[0]) {
-                let interim,
-                    final;
                 const transcript = result.alternatives[0].transcript;
+                
                 if (result.isFinal) {
-                    // Capitalize the first letter of the sentence
-                    currentTranscript += transcript.charAt(0).toUpperCase() + transcript.slice(1);
-                    final = currentTranscript;
-                }else {
-                    interim = result.alternatives[0].transcript;
+                    currentTranscript += transcript + '\n\n';
+                    socket.emit('transcription', {
+                        final: currentTranscript
+                    });
+                } else {
+                    socket.emit('transcription', {
+                        interim: transcript
+                    });
                 }
-                socket.emit('transcription', {
-                    interim,
-                    final
-                });
             }
         });
 

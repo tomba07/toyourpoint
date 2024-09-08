@@ -11,8 +11,12 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        #finalTranscript {
+            /* Styles for final transcript */
+        }
         #interimTranscript {
             color: gray;
+            /* Other styles for interim transcript */
         }
         .highlight {
             background-color: yellow;
@@ -27,8 +31,8 @@
     <button id="stopBtn" disabled>Stop Recording</button>
     <button id="resetBtn">Reset</button>
     <div id="transcriptContainer">
-        <span id="finalTranscript"></span>
-        <span id="interimTranscript"></span>
+        <div id="finalTranscript"></div>
+        <div id="interimTranscript"></div>
     </div>
 
     <script>
@@ -36,8 +40,8 @@
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const interimTranscript = document.getElementById('interimTranscript');
         const finalTranscript = document.getElementById('finalTranscript');
+        const interimTranscript = document.getElementById('interimTranscript');
 
         startBtn.addEventListener('click', () => {
             socket.emit('startRecording');
@@ -58,12 +62,12 @@
         });
 
         socket.on('transcription', (data) => {
+            if (data.final !== undefined) {
+                finalTranscript.textContent = data.final;
+                interimTranscript.textContent = ''; // Clear interim when final is updated
+            }
             if (data.interim !== undefined) {
                 interimTranscript.textContent = data.interim;
-            }
-            if (data.final !== undefined) {
-                finalTranscript.innerHTML = data.final;
-                interimTranscript.textContent = ''; // Clear interim when final is updated
             }
         });
 
