@@ -52,11 +52,14 @@
         resetBtn.addEventListener('click', () => {
             socket.emit('resetTranscript');
             finalTranscript.innerHTML = '';
+            interimTranscript.textContent = '';
         });
 
         socket.on('transcription', (data) => {
             interimTranscript.textContent = data.interim;
-            finalTranscript.innerHTML = data.final;
+            if (data.final !== undefined) {
+                finalTranscript.innerHTML = data.final;
+            }
         });
 
         socket.on('reload', () => {
