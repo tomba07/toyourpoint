@@ -26,6 +26,7 @@ const request = {
 };
 
 let recognizeStream;
+let currentTranscript = '';
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -35,6 +36,7 @@ io.on('connection', (socket) => {
     console.log('A user connected');
 
     socket.on('startRecording', () => {
+        currentTranscript = '';
         startStreamingTranscription(socket);
     });
 
@@ -42,6 +44,11 @@ io.on('connection', (socket) => {
         if (recognizeStream) {
             recognizeStream.destroy();
         }
+    });
+
+    socket.on('resetTranscript', () => {
+        currentTranscript = '';
+        socket.emit('transcription', currentTranscript);
     });
 
     socket.on('disconnect', () => {
@@ -56,10 +63,17 @@ function startStreamingTranscription(socket) {
         .streamingRecognize(request)
         .on('error', console.error)
         .on('data', data => {
-            const transcript = data.results[0] && data.results[0].alternatives[0]
-                ? data.results[0].alternatives[0].transcript
-                : 'Reached transcription time limit';
-            socket.emit('transcription', transcript);
+            const result = data.results[0];
+            if (result && result.alternatives[0]) {
+                const transcript = result.alternatives[0].transcript;
+                if (result.isFinal) {
+                    currentTranscript += transcript + ' ';
+                }
+                socket.emit('transcription', {
+                    interim: transcript,
+                    final: currentTranscript
+                });
+            }
         });
 
     recorder

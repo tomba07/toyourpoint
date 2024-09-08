@@ -6,19 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speech to Text</title>
     <script src="/socket.io/socket.io.js"></script>
+    <style>
+        #notes {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Speech to Text</h1>
     <button id="startBtn">Start Recording</button>
     <button id="stopBtn" disabled>Stop Recording</button>
-    <div id="transcript"></div>
+    <button id="takeNoteBtn">Take Note</button>
+    <button id="resetBtn">Reset Transcript</button>
+    <div id="interimTranscript"></div>
+    <div id="finalTranscript"></div>
+    <div id="notes">
+        <h2>Notes:</h2>
+        <ul id="notesList"></ul>
+    </div>
 
     <script>
         const socket = io();
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
-        const transcript = document.getElementById('transcript');
+        const takeNoteBtn = document.getElementById('takeNoteBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const interimTranscript = document.getElementById('interimTranscript');
+        const finalTranscript = document.getElementById('finalTranscript');
+        const notesList = document.getElementById('notesList');
 
         startBtn.addEventListener('click', () => {
             socket.emit('startRecording');
@@ -32,8 +50,22 @@
             stopBtn.disabled = true;
         });
 
-        socket.on('transcription', (text) => {
-            transcript.textContent = text;
+        resetBtn.addEventListener('click', () => {
+            socket.emit('resetTranscript');
+        });
+
+        takeNoteBtn.addEventListener('click', () => {
+            const note = finalTranscript.textContent;
+            if (note) {
+                const li = document.createElement('li');
+                li.textContent = note;
+                notesList.appendChild(li);
+            }
+        });
+
+        socket.on('transcription', (data) => {
+            interimTranscript.textContent = data.interim;
+            finalTranscript.textContent = data.final;
         });
     </script>
 </body>
