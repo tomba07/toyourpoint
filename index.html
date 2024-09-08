@@ -46,20 +46,13 @@
         const finalTranscript = document.getElementById('finalTranscript');
         const interimTranscript = document.getElementById('interimTranscript');
 
-        let finalTranscriptArray = [
-            "This is an initial test transcript.",
-            "It has multiple lines for testing purposes.",
-            "You can click on any line to highlight it."
-        ];
+        let finalTranscriptArray = [];
 
         function updateFinalTranscript() {
             finalTranscript.innerHTML = finalTranscriptArray.map(line => 
                 `<p>${line}</p>`
             ).join('');
         }
-
-        // Initial update
-        updateFinalTranscript();
 
         startBtn.addEventListener('click', () => {
             socket.emit('startRecording');
