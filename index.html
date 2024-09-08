@@ -20,7 +20,7 @@
     <button id="startBtn">Start Recording</button>
     <button id="stopBtn" disabled>Stop Recording</button>
     <button id="takeNoteBtn">Take Note</button>
-    <button id="resetBtn">Reset Transcript</button>
+    <button id="resetBtn">Reset</button>
     <div id="interimTranscript"></div>
     <div id="finalTranscript"></div>
     <div id="notes">
@@ -52,13 +52,19 @@
 
         resetBtn.addEventListener('click', () => {
             socket.emit('resetTranscript');
+            // Clear the notes list
+            notesList.innerHTML = '';
         });
 
         takeNoteBtn.addEventListener('click', () => {
-            const note = finalTranscript.textContent;
-            if (note) {
+            const finalText = finalTranscript.textContent;
+            const sentences = finalText.match(/[^\.!\?]+[\.!\?]+/g) || [];
+            let lastThreeSentences = sentences.slice(-3).join(' ').trim();
+            if (lastThreeSentences) {
+                // Add "[...]" to the start and end of the note
+                lastThreeSentences = `[...] ${lastThreeSentences} [...]`;
                 const li = document.createElement('li');
-                li.textContent = note;
+                li.textContent = lastThreeSentences;
                 notesList.appendChild(li);
             }
         });

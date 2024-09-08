@@ -22,6 +22,8 @@ const request = {
         encoding: encoding,
         sampleRateHertz: sampleRateHertz,
         languageCode: languageCode,
+        enableAutomaticPunctuation: true,  // Add this line
+        model: 'default'
     },
     interimResults: true, // If you want interim results, set this to true
 };
@@ -68,11 +70,13 @@ function startStreamingTranscription(socket) {
             if (result && result.alternatives[0]) {
                 const transcript = result.alternatives[0].transcript;
                 if (result.isFinal) {
-                    currentTranscript += transcript + ' ';
+                    // Capitalize the first letter of the sentence
+                    const formattedTranscript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+                    currentTranscript += formattedTranscript + ' ';
                 }
                 socket.emit('transcription', {
                     interim: transcript,
-                    final: currentTranscript
+                    final: currentTranscript.trim()  // Trim any trailing spaces
                 });
             }
         });
