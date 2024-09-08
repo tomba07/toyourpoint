@@ -7,9 +7,12 @@
     <title>To Your Point</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        #finalTranscript {
+        #transcriptContainer {
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+        #interimTranscript {
+            color: gray;
         }
         .highlight {
             background-color: yellow;
@@ -23,8 +26,10 @@
     <button id="startBtn">Start Recording</button>
     <button id="stopBtn" disabled>Stop Recording</button>
     <button id="resetBtn">Reset</button>
-    <div id="interimTranscript"></div>
-    <div id="finalTranscript"></div>
+    <div id="transcriptContainer">
+        <span id="finalTranscript"></span>
+        <span id="interimTranscript"></span>
+    </div>
 
     <script>
         const socket = io();
@@ -56,9 +61,12 @@
         });
 
         socket.on('transcription', (data) => {
-            interimTranscript.textContent = data.interim;
             if (data.final !== undefined) {
                 finalTranscript.innerHTML = data.final;
+                interimTranscript.textContent = ''; // Clear interim when final is updated
+            }
+            if (data.interim !== undefined) {
+                interimTranscript.textContent = data.interim;
             }
         });
 
