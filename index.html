@@ -67,6 +67,11 @@
             interimTranscript.textContent = data.interim;
             finalTranscript.textContent = data.final;
         });
+
+        socket.on('reload', () => {
+            console.log('Server code changed. Reloading...');
+            location.reload();
+        });
     </script>
 </body>
 

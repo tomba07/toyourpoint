@@ -4,6 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const recorder = require('node-record-lpcm16');
 const speech = require('@google-cloud/speech');
+const chokidar = require('chokidar');
 
 const app = express();
 const server = http.createServer(app);
@@ -87,6 +88,18 @@ function startStreamingTranscription(socket) {
         .stream()
         .on('error', console.error)
         .pipe(recognizeStream);
+}
+
+if (process.env.NODE_ENV !== 'production') {
+    const watcher = chokidar.watch('.', {
+        ignored: /node_modules/,
+        persistent: true
+    });
+
+    watcher.on('change', (path) => {
+        console.log(`File ${path} has been changed`);
+        io.emit('reload');
+    });
 }
 
 const PORT = process.env.PORT || 3000;
