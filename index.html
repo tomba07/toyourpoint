@@ -7,10 +7,13 @@
     <title>To Your Point</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        #notes {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
+        #finalTranscript {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .highlight {
+            background-color: yellow;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -19,24 +22,20 @@
     <h1>To Your Point...</h1>
     <button id="startBtn">Start Recording</button>
     <button id="stopBtn" disabled>Stop Recording</button>
-    <button id="takeNoteBtn">Take Note</button>
     <button id="resetBtn">Reset</button>
     <div id="interimTranscript"></div>
     <div id="finalTranscript"></div>
-    <div id="notes">
-        <h2>Notes:</h2>
-        <ul id="notesList"></ul>
-    </div>
 
     <script>
         const socket = io();
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
-        const takeNoteBtn = document.getElementById('takeNoteBtn');
         const resetBtn = document.getElementById('resetBtn');
         const interimTranscript = document.getElementById('interimTranscript');
         const finalTranscript = document.getElementById('finalTranscript');
-        const notesList = document.getElementById('notesList');
+
+        // Prefill the final transcript with sample text
+        finalTranscript.innerHTML = `This is a sample transcript. You can highlight any part of this text by selecting it with your mouse. Click on a highlighted portion to remove the highlight. This feature allows you to easily mark important parts of the transcript. You can test the highlighting functionality right away without having to record actual speech. Feel free to try selecting different parts of this text to see how the highlighting works.`;
 
         startBtn.addEventListener('click', () => {
             socket.emit('startRecording');
@@ -52,31 +51,38 @@
 
         resetBtn.addEventListener('click', () => {
             socket.emit('resetTranscript');
-            // Clear the notes list
-            notesList.innerHTML = '';
-        });
-
-        takeNoteBtn.addEventListener('click', () => {
-            const finalText = finalTranscript.textContent;
-            const sentences = finalText.match(/[^\.!\?]+[\.!\?]+/g) || [];
-            let lastThreeSentences = sentences.slice(-3).join(' ').trim();
-            if (lastThreeSentences) {
-                // Add "[...]" to the start and end of the note
-                lastThreeSentences = `[...] ${lastThreeSentences} [...]`;
-                const li = document.createElement('li');
-                li.textContent = lastThreeSentences;
-                notesList.appendChild(li);
-            }
+            finalTranscript.innerHTML = '';
         });
 
         socket.on('transcription', (data) => {
             interimTranscript.textContent = data.interim;
-            finalTranscript.textContent = data.final;
+            finalTranscript.innerHTML = data.final;
         });
 
         socket.on('reload', () => {
             console.log('Server code changed. Reloading...');
             location.reload();
+        });
+
+        // Highlighting functionality
+        finalTranscript.addEventListener('mouseup', () => {
+            const selection = window.getSelection();
+            if (!selection.isCollapsed) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = 'highlight';
+                range.surroundContents(span);
+                selection.removeAllRanges();
+            }
+        });
+
+        finalTranscript.addEventListener('click', (event) => {
+            if (event.target.classList.contains('highlight')) {
+                const parent = event.target.parentNode;
+                const textNode = document.createTextNode(event.target.textContent);
+                parent.replaceChild(textNode, event.target);
+                parent.normalize(); // This merges adjacent text nodes
+            }
         });
     </script>
 </body>
