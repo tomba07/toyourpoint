@@ -43,6 +43,8 @@
         const finalTranscript = document.getElementById('finalTranscript');
         const interimTranscript = document.getElementById('interimTranscript');
 
+        let finalTranscriptArray = [];
+
         startBtn.addEventListener('click', () => {
             socket.emit('startRecording');
             startBtn.disabled = true;
@@ -57,17 +59,30 @@
 
         resetBtn.addEventListener('click', () => {
             socket.emit('resetTranscript');
-            finalTranscript.innerHTML = '';
+            finalTranscriptArray = [];
+            updateFinalTranscript();
             interimTranscript.textContent = '';
         });
 
         socket.on('transcription', (data) => {
-            if (data.final !== undefined) {
-                finalTranscript.textContent = data.final;
-                interimTranscript.textContent = ''; // Clear interim when final is updated
+            if (data.isFinal) {
+                finalTranscriptArray.push(data.transcript.trim());
+                updateFinalTranscript();
+                interimTranscript.textContent = '';
+            } else {
+                interimTranscript.textContent = data.transcript;
             }
-            if (data.interim !== undefined) {
-                interimTranscript.textContent = data.interim;
+        });
+
+        function updateFinalTranscript() {
+            finalTranscript.innerHTML = finalTranscriptArray.map(line => 
+                `<p>${line}</p>`
+            ).join('');
+        }
+
+        finalTranscript.addEventListener('click', (event) => {
+            if (event.target.tagName === 'P') {
+                event.target.classList.toggle('highlight');
             }
         });
 

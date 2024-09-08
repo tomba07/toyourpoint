@@ -71,16 +71,10 @@ function startStreamingTranscription(socket) {
             if (result && result.alternatives[0]) {
                 const transcript = result.alternatives[0].transcript;
                 
-                if (result.isFinal) {
-                    currentTranscript += transcript + '\n\n';
-                    socket.emit('transcription', {
-                        final: currentTranscript
-                    });
-                } else {
-                    socket.emit('transcription', {
-                        interim: transcript
-                    });
-                }
+                socket.emit('transcription', {
+                    transcript: transcript,
+                    isFinal: result.isFinal
+                });
             }
         });
 
