@@ -39,9 +39,6 @@
         const interimTranscript = document.getElementById('interimTranscript');
         const finalTranscript = document.getElementById('finalTranscript');
 
-        // Prefill the final transcript with sample text
-        finalTranscript.innerHTML = `This is a sample transcript. You can highlight any part of this text by selecting it with your mouse. Click on a highlighted portion to remove the highlight. This feature allows you to easily mark important parts of the transcript. You can test the highlighting functionality right away without having to record actual speech. Feel free to try selecting different parts of this text to see how the highlighting works.`;
-
         startBtn.addEventListener('click', () => {
             socket.emit('startRecording');
             startBtn.disabled = true;
@@ -61,12 +58,12 @@
         });
 
         socket.on('transcription', (data) => {
+            if (data.interim !== undefined) {
+                interimTranscript.textContent = data.interim;
+            }
             if (data.final !== undefined) {
                 finalTranscript.innerHTML = data.final;
                 interimTranscript.textContent = ''; // Clear interim when final is updated
-            }
-            if (data.interim !== undefined) {
-                interimTranscript.textContent = data.interim;
             }
         });
 

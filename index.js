@@ -68,15 +68,19 @@ function startStreamingTranscription(socket) {
         .on('data', data => {
             const result = data.results[0];
             if (result && result.alternatives[0]) {
+                let interim,
+                    final;
                 const transcript = result.alternatives[0].transcript;
                 if (result.isFinal) {
                     // Capitalize the first letter of the sentence
-                    const formattedTranscript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
-                    currentTranscript += formattedTranscript + ' ';
+                    currentTranscript += transcript.charAt(0).toUpperCase() + transcript.slice(1);
+                    final = currentTranscript;
+                }else {
+                    interim = result.alternatives[0].transcript;
                 }
                 socket.emit('transcription', {
-                    interim: transcript,
-                    final: currentTranscript.trim()  // Trim any trailing spaces
+                    interim,
+                    final
                 });
             }
         });
